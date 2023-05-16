@@ -3,7 +3,7 @@ import { extension_settings, getContext } from "../../extensions.js";
 import { debounce } from "../../utils.js";
 export { MODULE_NAME };
 
-const saveChatDebounced = debounce(async () => await getContext().saveChat(), 1000);
+const saveMetadataDebounced = debounce(async () => await getContext().saveMetadata(), 1000);
 
 const MODULE_NAME = '2_floating_prompt'; // <= Deliberate, for sorting lower than memory
 const UPDATE_INTERVAL = 1000;
@@ -21,12 +21,12 @@ const metadata_keys = {
 
 async function onExtensionFloatingPromptInput() {
     chat_metadata[metadata_keys.prompt] = $(this).val();
-    saveChatDebounced();
+    saveMetadataDebounced();
 }
 
 async function onExtensionFloatingIntervalInput() {
     chat_metadata[metadata_keys.interval] = Number($(this).val());
-    saveChatDebounced();
+    saveMetadataDebounced();
 }
 
 async function onExtensionFloatingDepthInput() {
@@ -38,12 +38,12 @@ async function onExtensionFloatingDepthInput() {
     }
 
     chat_metadata[metadata_keys.depth] = value;
-    saveChatDebounced();
+    saveMetadataDebounced();
 }
 
 async function onExtensionFloatingPositionInput(e) {
     chat_metadata[metadata_keys.position] = e.target.value;
-    saveChatDebounced();
+    saveMetadataDebounced();
 }
 
 function onExtensionFloatingDefaultInput() {
@@ -63,10 +63,28 @@ function loadSettings() {
     $('#extension_floating_default').val(extension_settings.note.default);
 }
 
+let isWorkerBusy = false;
+
+async function moduleWorkerWrapper() {
+    // Don't touch me I'm busy...
+    if (isWorkerBusy) {
+        return;
+    }
+
+    // I'm free. Let's update!
+    try {
+        isWorkerBusy = true;
+        await moduleWorker();
+    }
+    finally {
+        isWorkerBusy = false;
+    }
+}
+
 async function moduleWorker() {
     const context = getContext();
 
-    if (!context.groupId && !context.characterId) {
+    if (!context.groupId && context.characterId === undefined) {
         return;
     }
 
@@ -105,6 +123,10 @@ async function moduleWorker() {
                     <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
             </div>
             <div class="inline-drawer-content">
+                <small>
+                    Your notes are saved <b>PER CHAT</b>. When you start a new chat, you'll see the default / empty note.<br>
+                    Saving a bookmark will copy your note to a bookmark chat. Making changes to it won't update the note in a parent chat.<br>
+                </small>
                 <label for="extension_floating_prompt">Append the following text:</label>
                 <textarea id="extension_floating_prompt" class="text_pole" rows="8"></textarea>
                 <div class="floating_prompt_radio_group">
@@ -147,5 +169,5 @@ async function moduleWorker() {
     }
 
     addExtensionsSettings();
-    setInterval(moduleWorker, UPDATE_INTERVAL);
+    setInterval(moduleWorkerWrapper, UPDATE_INTERVAL);
 })();

@@ -7,6 +7,7 @@ public/groups/
 public/worlds/
 public/css/bg_load.css
 public/themes/
+public/OpenAI Settings/
 /uploads/
 *.jsonl
 config.conf
@@ -15,3 +16,4 @@ public/settings.json
 /thumbnails
 whitelist.txt
 .vscode
+secrets.json
