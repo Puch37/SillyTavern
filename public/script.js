@@ -1615,10 +1615,10 @@ async function Generate(type, { automatic_trigger, force_name2, resolve, reject,
 
     // Set empty promise resolution functions
     if (typeof resolve !== 'function') {
-        resolve = () => {};
+        resolve = () => { };
     }
     if (typeof reject !== 'function') {
-        reject = () => {};
+        reject = () => { };
     }
 
     if (selected_group && !is_group_generating) {
@@ -2743,7 +2743,7 @@ function saveReply(type, getMessage, this_mes_is_name, title) {
     } else {
         item['swipe_id'] = 0;
         item['swipes'] = [];
-        item['swipes'][0] = chat[chat.length - 1]['mes']; 
+        item['swipes'][0] = chat[chat.length - 1]['mes'];
     }
 
     return { type, getMessage };
@@ -4080,7 +4080,7 @@ function isHordeGenerationNotAllowed() {
 }
 
 export function cancelTtsPlay() {
-    if (speechSynthesis) {
+    if ('speechSynthesis' in window) {
         speechSynthesis.cancel();
     }
 }

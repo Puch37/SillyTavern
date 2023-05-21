@@ -860,7 +860,7 @@ async function charaWrite(img_url, data, target_img, response = undefined, mes =
         let rawImg = await jimp.read(img_url);
 
         // Apply crop if defined
-        if (typeof crop == 'object') {
+        if (typeof crop == 'object' && [crop.x, crop.y, crop.width, crop.height].every(x => typeof x === 'number')) {
             rawImg = rawImg.crop(crop.x, crop.y, crop.width, crop.height);
         }
 
@@ -2715,8 +2715,12 @@ const setupTasks = async function () {
 }
 
 if (listen && !config.whitelistMode && !config.basicAuthMode) {
-    console.error('Your SillyTavern is currently unsecurely open to the public. Enable whitelisting or basic authentication.');
-    process.exit(1);
+	if (config.securityOverride)
+		console.warn("Security has been override. If it's not a trusted network, change the settings.");
+	else {
+		console.error('Your SillyTavern is currently unsecurely open to the public. Enable whitelisting or basic authentication.');
+		process.exit(1);
+	}
 }
 
 if (true === cliArguments.ssl)
